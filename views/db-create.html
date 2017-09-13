@@ -1,0 +1,468 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <style>
+div.table {
+    width: 100%;
+    /* height:100px;*/
+    border: 1px solid #C1C1C1;
+    overflow: auto;
+    white-space: nowrap;
+}
+tr.head > th{
+    white-space: nowrap;
+    background-color: #e8e8e8;
+    padding: 5px 10px 5px 10px;
+}
+        </style>
+    </head>
+    <body>
+        <div>
+            Имя таблицы: <input type="text" name="table" size="40" maxlength="80" autofocus="" required="">
+        </div>
+        <p>
+            Добавить <input id="elems" type="text" size="2" value="1"> поле(я) <input type="submit" value="Вперёд" onclick="add()">
+        </p>
+        <div class="table">
+            <table id="t1">
+                <tr class="head">
+                    <th>Имя</th>
+                    <th>Тип</th>
+                    <th>Длина/Значения</th>
+                    <th>По умолчанию</th>
+                    <th>Сравнение</th>
+                    <th>Атрибуты</th>
+                    <th>Null</th>
+                    <th>Индекс</th>
+                    <th>A_I</th>
+                    <th>Комментарии</th>
+                    <th>MIME-тип</th>
+                    <th>Преобразование</th>
+                    <th>Параметры преобразований</th>
+                </tr>
+            </table>
+        </div>
+        <hr>
+        <table>
+            <tbody>
+                <tr><th>Комментарии к таблице:</th>
+                <td width="25">&nbsp;</td>
+                <th>Сравнение:</th>
+                <td width="25">&nbsp;</td>
+                <th>Тип таблиц: <a href="https://dev.mysql.com/doc/refman/5.7/en/storage-engines.html">?</a></th>
+                <td width="25">&nbsp;</td>
+                <tr><td><input type="text" name="comment" size="36" maxlength="60" value=""></td>
+                <td width="25">&nbsp;</td>
+                <td><select lang="en" dir="ltr" name="tbl_collation"></select></td>
+                <td width="25">&nbsp;</td>
+                <td><select name="tbl_storage_engine"><option value="InnoDB" title="Supports transactions, row-level locking, and foreign keys" selected="selected">InnoDB</option>
+    <option value="CSV" title="CSV storage engine">CSV</option>
+    <option value="MyISAM" title="MyISAM storage engine">MyISAM</option>
+    <option value="BLACKHOLE" title="/dev/null storage engine (anything you write to it disappears)">BLACKHOLE</option>
+    <option value="MEMORY" title="Hash based, stored in memory, useful for temporary tables">MEMORY</option>
+    <option value="ARCHIVE" title="Archive storage engine">ARCHIVE</option>
+    <option value="MRG_MYISAM" title="Collection of identical MyISAM tables">MRG_MYISAM</option></select></td>
+                <td width="25">&nbsp;</td>
+                <tr class="vtop"><th>Определение разделов (PARTITION): &nbsp;
+                        <a href="./url.php?url=http%3A%2F%2Fdev.mysql.com%2Fdoc%2Frefman%2F5.7%2Fen%2Fpartitioning.html">?</a></th></tr>
+
+                <tr><td><textarea name="partition_definition" cols="40" rows="15" style="margin: 6px; width: 266px; height: 32px;"></textarea></td></tr>
+            </tbody>
+        </table>
+        <input type="submit" value="Генерация" onclick="create()">
+        <script>
+var idx = 0;
+var cdrs = `<option value=""></option>
+<optgroup label="armscii8" title="ARMSCII-8 Armenian">
+<option value="armscii8_bin" title="Армянский, Двоичный">armscii8_bin</option>
+<option value="armscii8_general_ci" title="Армянский, регистронезависимый">armscii8_general_ci</option>
+</optgroup>
+<optgroup label="ascii" title="US ASCII">
+<option value="ascii_bin" title="Западно-Европейский (многоязычный), Двоичный">ascii_bin</option>
+<option value="ascii_general_ci" title="Западно-Европейский (многоязычный), регистронезависимый">ascii_general_ci</option>
+</optgroup>
+<optgroup label="big5" title="Big5 Traditional Chinese">
+<option value="big5_bin" title="Китайский традиционный, Двоичный">big5_bin</option>
+<option value="big5_chinese_ci" title="Китайский традиционный, регистронезависимый">big5_chinese_ci</option>
+</optgroup>
+<optgroup label="binary" title="Binary pseudo charset">
+<option value="binary" title="Двоичный">binary</option>
+</optgroup>
+<optgroup label="cp1250" title="Windows Central European">
+<option value="cp1250_bin" title="Центрально-Европейский (многоязычный), Двоичный">cp1250_bin</option>
+<option value="cp1250_croatian_ci" title="Хорватский, регистронезависимый">cp1250_croatian_ci</option>
+<option value="cp1250_czech_cs" title="Чешский, регистрозависымый">cp1250_czech_cs</option>
+<option value="cp1250_general_ci" title="Центрально-Европейский (многоязычный), регистронезависимый">cp1250_general_ci</option>
+<option value="cp1250_polish_ci" title="Польский, регистронезависимый">cp1250_polish_ci</option>
+</optgroup>
+<optgroup label="cp1251" title="Windows Cyrillic">
+<option value="cp1251_bin" title="Кириллический (многоязычный), Двоичный">cp1251_bin</option>
+<option value="cp1251_bulgarian_ci" title="Болгарский, регистронезависимый">cp1251_bulgarian_ci</option>
+<option value="cp1251_general_ci" title="Кириллический (многоязычный), регистронезависимый">cp1251_general_ci</option>
+<option value="cp1251_general_cs" title="Кириллический (многоязычный), регистрозависымый">cp1251_general_cs</option>
+<option value="cp1251_ukrainian_ci" title="Украинский, регистронезависимый">cp1251_ukrainian_ci</option>
+</optgroup>
+<optgroup label="cp1256" title="Windows Arabic">
+<option value="cp1256_bin" title="Арабский, Двоичный">cp1256_bin</option>
+<option value="cp1256_general_ci" title="Арабский, регистронезависимый">cp1256_general_ci</option>
+</optgroup>
+<optgroup label="cp1257" title="Windows Baltic">
+<option value="cp1257_bin" title="Балтийский (многоязычный), Двоичный">cp1257_bin</option>
+<option value="cp1257_general_ci" title="Балтийский (многоязычный), регистронезависимый">cp1257_general_ci</option>
+<option value="cp1257_lithuanian_ci" title="Литовский, регистронезависимый">cp1257_lithuanian_ci</option>
+</optgroup>
+<optgroup label="cp850" title="DOS West European">
+<option value="cp850_bin" title="Западно-Европейский (многоязычный), Двоичный">cp850_bin</option>
+<option value="cp850_general_ci" title="Западно-Европейский (многоязычный), регистронезависимый">cp850_general_ci</option>
+</optgroup>
+<optgroup label="cp852" title="DOS Central European">
+<option value="cp852_bin" title="Центрально-Европейский (многоязычный), Двоичный">cp852_bin</option>
+<option value="cp852_general_ci" title="Центрально-Европейский (многоязычный), регистронезависимый">cp852_general_ci</option>
+</optgroup>
+<optgroup label="cp866" title="DOS Russian">
+<option value="cp866_bin" title="Русский, Двоичный">cp866_bin</option>
+<option value="cp866_general_ci" title="Русский, регистронезависимый">cp866_general_ci</option>
+</optgroup>
+<optgroup label="cp932" title="SJIS for Windows Japanese">
+<option value="cp932_bin" title="Японский, Двоичный">cp932_bin</option>
+<option value="cp932_japanese_ci" title="Японский, регистронезависимый">cp932_japanese_ci</option>
+</optgroup>
+<optgroup label="dec8" title="DEC West European">
+<option value="dec8_bin" title="Западно-Европейский (многоязычный), Двоичный">dec8_bin</option>
+<option value="dec8_swedish_ci" title="Шведский, регистронезависимый">dec8_swedish_ci</option>
+</optgroup>
+<optgroup label="eucjpms" title="UJIS for Windows Japanese">
+<option value="eucjpms_bin" title="Японский, Двоичный">eucjpms_bin</option>
+<option value="eucjpms_japanese_ci" title="Японский, регистронезависимый">eucjpms_japanese_ci</option>
+</optgroup>
+<optgroup label="euckr" title="EUC-KR Korean">
+<option value="euckr_bin" title="Корейский, Двоичный">euckr_bin</option>
+<option value="euckr_korean_ci" title="Корейский, регистронезависимый">euckr_korean_ci</option>
+</optgroup>
+<optgroup label="gb2312" title="GB2312 Simplified Chinese">
+<option value="gb2312_bin" title="Китайский упрощенный, Двоичный">gb2312_bin</option>
+<option value="gb2312_chinese_ci" title="Китайский упрощенный, регистронезависимый">gb2312_chinese_ci</option>
+</optgroup>
+<optgroup label="gbk" title="GBK Simplified Chinese">
+<option value="gbk_bin" title="Китайский упрощенный, Двоичный">gbk_bin</option>
+<option value="gbk_chinese_ci" title="Китайский упрощенный, регистронезависимый">gbk_chinese_ci</option>
+</optgroup>
+<optgroup label="geostd8" title="GEOSTD8 Georgian">
+<option value="geostd8_bin" title="Грузинский, Двоичный">geostd8_bin</option>
+<option value="geostd8_general_ci" title="Грузинский, регистронезависимый">geostd8_general_ci</option>
+</optgroup>
+<optgroup label="greek" title="ISO 8859-7 Greek">
+<option value="greek_bin" title="Греческий, Двоичный">greek_bin</option>
+<option value="greek_general_ci" title="Греческий, регистронезависимый">greek_general_ci</option>
+</optgroup>
+<optgroup label="hebrew" title="ISO 8859-8 Hebrew">
+<option value="hebrew_bin" title="Иврит, Двоичный">hebrew_bin</option>
+<option value="hebrew_general_ci" title="Иврит, регистронезависимый">hebrew_general_ci</option>
+</optgroup>
+<optgroup label="hp8" title="HP West European">
+<option value="hp8_bin" title="Западно-Европейский (многоязычный), Двоичный">hp8_bin</option>
+<option value="hp8_english_ci" title="Английский, регистронезависимый">hp8_english_ci</option>
+</optgroup>
+<optgroup label="keybcs2" title="DOS Kamenicky Czech-Slovak">
+<option value="keybcs2_bin" title="Чехословацкий, Двоичный">keybcs2_bin</option>
+<option value="keybcs2_general_ci" title="Чехословацкий, регистронезависимый">keybcs2_general_ci</option>
+</optgroup>
+<optgroup label="koi8r" title="KOI8-R Relcom Russian">
+<option value="koi8r_bin" title="Русский, Двоичный">koi8r_bin</option>
+<option value="koi8r_general_ci" title="Русский, регистронезависимый">koi8r_general_ci</option>
+</optgroup>
+<optgroup label="koi8u" title="KOI8-U Ukrainian">
+<option value="koi8u_bin" title="Украинский, Двоичный">koi8u_bin</option>
+<option value="koi8u_general_ci" title="Украинский, регистронезависимый">koi8u_general_ci</option>
+</optgroup>
+<optgroup label="latin1" title="cp1252 West European">
+<option value="latin1_bin" title="Западно-Европейский (многоязычный), Двоичный">latin1_bin</option>
+<option value="latin1_danish_ci" title="Датский, регистронезависимый">latin1_danish_ci</option>
+<option value="latin1_general_ci" title="Западно-Европейский (многоязычный), регистронезависимый">latin1_general_ci</option>
+<option value="latin1_general_cs" title="Западно-Европейский (многоязычный), регистрозависымый">latin1_general_cs</option>
+<option value="latin1_german1_ci" title="Немецкий (словарь), регистронезависимый">latin1_german1_ci</option>
+<option value="latin1_german2_ci" title="Немецкий (телефонная книга), регистронезависимый">latin1_german2_ci</option>
+<option value="latin1_spanish_ci" title="Испанский, регистронезависимый">latin1_spanish_ci</option>
+<option value="latin1_swedish_ci" title="Шведский, регистронезависимый">latin1_swedish_ci</option>
+</optgroup>
+<optgroup label="latin2" title="ISO 8859-2 Central European">
+<option value="latin2_bin" title="Центрально-Европейский (многоязычный), Двоичный">latin2_bin</option>
+<option value="latin2_croatian_ci" title="Хорватский, регистронезависимый">latin2_croatian_ci</option>
+<option value="latin2_czech_cs" title="Чешский, регистрозависымый">latin2_czech_cs</option>
+<option value="latin2_general_ci" title="Центрально-Европейский (многоязычный), регистронезависимый">latin2_general_ci</option>
+<option value="latin2_hungarian_ci" title="Венгерский, регистронезависимый">latin2_hungarian_ci</option>
+</optgroup>
+<optgroup label="latin5" title="ISO 8859-9 Turkish">
+<option value="latin5_bin" title="Турецкий, Двоичный">latin5_bin</option>
+<option value="latin5_turkish_ci" title="Турецкий, регистронезависимый">latin5_turkish_ci</option>
+</optgroup>
+<optgroup label="latin7" title="ISO 8859-13 Baltic">
+<option value="latin7_bin" title="Балтийский (многоязычный), Двоичный">latin7_bin</option>
+<option value="latin7_estonian_cs" title="Эстонский, регистрозависымый">latin7_estonian_cs</option>
+<option value="latin7_general_ci" title="Балтийский (многоязычный), регистронезависимый">latin7_general_ci</option>
+<option value="latin7_general_cs" title="Балтийский (многоязычный), регистрозависымый">latin7_general_cs</option>
+</optgroup>
+<optgroup label="macce" title="Mac Central European">
+<option value="macce_bin" title="Центрально-Европейский (многоязычный), Двоичный">macce_bin</option>
+<option value="macce_general_ci" title="Центрально-Европейский (многоязычный), регистронезависимый">macce_general_ci</option>
+</optgroup>
+<optgroup label="macroman" title="Mac West European">
+<option value="macroman_bin" title="Западно-Европейский (многоязычный), Двоичный">macroman_bin</option>
+<option value="macroman_general_ci" title="Западно-Европейский (многоязычный), регистронезависимый">macroman_general_ci</option>
+</optgroup>
+<optgroup label="sjis" title="Shift-JIS Japanese">
+<option value="sjis_bin" title="Японский, Двоичный">sjis_bin</option>
+<option value="sjis_japanese_ci" title="Японский, регистронезависимый">sjis_japanese_ci</option>
+</optgroup>
+<optgroup label="swe7" title="7bit Swedish">
+<option value="swe7_bin" title="Шведский, Двоичный">swe7_bin</option>
+<option value="swe7_swedish_ci" title="Шведский, регистронезависимый">swe7_swedish_ci</option>
+</optgroup>
+<optgroup label="tis620" title="TIS620 Thai">
+<option value="tis620_bin" title="Таи, Двоичный">tis620_bin</option>
+<option value="tis620_thai_ci" title="Таи, регистронезависимый">tis620_thai_ci</option>
+</optgroup>
+<optgroup label="ucs2" title="UCS-2 Unicode">
+<option value="ucs2_bin" title="Юникод (многоязычный), Двоичный">ucs2_bin</option>
+<option value="ucs2_croatian_ci" title="Хорватский, регистронезависимый">ucs2_croatian_ci</option>
+<option value="ucs2_croatian_mysql561_ci" title="Хорватский">ucs2_croatian_mysql561_ci</option>
+<option value="ucs2_czech_ci" title="Чешский, регистронезависимый">ucs2_czech_ci</option>
+<option value="ucs2_danish_ci" title="Датский, регистронезависимый">ucs2_danish_ci</option>
+<option value="ucs2_esperanto_ci" title="Эсперанто, регистронезависимый">ucs2_esperanto_ci</option>
+<option value="ucs2_estonian_ci" title="Эстонский, регистронезависимый">ucs2_estonian_ci</option>
+<option value="ucs2_general_ci" title="Юникод (многоязычный), регистронезависимый">ucs2_general_ci</option>
+<option value="ucs2_general_mysql500_ci" title="Юникод (многоязычный)">ucs2_general_mysql500_ci</option>
+<option value="ucs2_german2_ci" title="Немецкий (телефонная книга), регистронезависимый">ucs2_german2_ci</option>
+<option value="ucs2_hungarian_ci" title="Венгерский, регистронезависимый">ucs2_hungarian_ci</option>
+<option value="ucs2_icelandic_ci" title="Исландский, регистронезависимый">ucs2_icelandic_ci</option>
+<option value="ucs2_latvian_ci" title="Латвийский, регистронезависимый">ucs2_latvian_ci</option>
+<option value="ucs2_lithuanian_ci" title="Литовский, регистронезависимый">ucs2_lithuanian_ci</option>
+<option value="ucs2_myanmar_ci" title="неизвестно, регистронезависимый">ucs2_myanmar_ci</option>
+<option value="ucs2_persian_ci" title="Персидский, регистронезависимый">ucs2_persian_ci</option>
+<option value="ucs2_polish_ci" title="Польский, регистронезависимый">ucs2_polish_ci</option>
+<option value="ucs2_roman_ci" title="Западно-Европейский, регистронезависимый">ucs2_roman_ci</option>
+<option value="ucs2_romanian_ci" title="Румынский, регистронезависимый">ucs2_romanian_ci</option>
+<option value="ucs2_sinhala_ci" title="неизвестно, регистронезависимый">ucs2_sinhala_ci</option>
+<option value="ucs2_slovak_ci" title="Словацкий, регистронезависимый">ucs2_slovak_ci</option>
+<option value="ucs2_slovenian_ci" title="Словенский, регистронезависимый">ucs2_slovenian_ci</option>
+<option value="ucs2_spanish2_ci" title="Испанский традиционный, регистронезависимый">ucs2_spanish2_ci</option>
+<option value="ucs2_spanish_ci" title="Испанский, регистронезависимый">ucs2_spanish_ci</option>
+<option value="ucs2_swedish_ci" title="Шведский, регистронезависимый">ucs2_swedish_ci</option>
+<option value="ucs2_turkish_ci" title="Турецкий, регистронезависимый">ucs2_turkish_ci</option>
+<option value="ucs2_unicode_520_ci" title="Юникод (многоязычный)">ucs2_unicode_520_ci</option>
+<option value="ucs2_unicode_ci" title="Юникод (многоязычный), регистронезависимый">ucs2_unicode_ci</option>
+<option value="ucs2_vietnamese_ci" title="неизвестно, регистронезависимый">ucs2_vietnamese_ci</option>
+</optgroup>
+<optgroup label="ujis" title="EUC-JP Japanese">
+<option value="ujis_bin" title="Японский, Двоичный">ujis_bin</option>
+<option value="ujis_japanese_ci" title="Японский, регистронезависимый">ujis_japanese_ci</option>
+</optgroup>
+<optgroup label="utf16" title="UTF-16 Unicode">
+<option value="utf16_bin" title="неизвестно, Двоичный">utf16_bin</option>
+<option value="utf16_croatian_ci" title="Хорватский, регистронезависимый">utf16_croatian_ci</option>
+<option value="utf16_croatian_mysql561_ci" title="Хорватский">utf16_croatian_mysql561_ci</option>
+<option value="utf16_czech_ci" title="Чешский, регистронезависимый">utf16_czech_ci</option>
+<option value="utf16_danish_ci" title="Датский, регистронезависимый">utf16_danish_ci</option>
+<option value="utf16_esperanto_ci" title="Эсперанто, регистронезависимый">utf16_esperanto_ci</option>
+<option value="utf16_estonian_ci" title="Эстонский, регистронезависимый">utf16_estonian_ci</option>
+<option value="utf16_general_ci" title="неизвестно, регистронезависимый">utf16_general_ci</option>
+<option value="utf16_german2_ci" title="Немецкий (телефонная книга), регистронезависимый">utf16_german2_ci</option>
+<option value="utf16_hungarian_ci" title="Венгерский, регистронезависимый">utf16_hungarian_ci</option>
+<option value="utf16_icelandic_ci" title="Исландский, регистронезависимый">utf16_icelandic_ci</option>
+<option value="utf16_latvian_ci" title="Латвийский, регистронезависимый">utf16_latvian_ci</option>
+<option value="utf16_lithuanian_ci" title="Литовский, регистронезависимый">utf16_lithuanian_ci</option>
+<option value="utf16_myanmar_ci" title="неизвестно, регистронезависимый">utf16_myanmar_ci</option>
+<option value="utf16_persian_ci" title="Персидский, регистронезависимый">utf16_persian_ci</option>
+<option value="utf16_polish_ci" title="Польский, регистронезависимый">utf16_polish_ci</option>
+<option value="utf16_roman_ci" title="Западно-Европейский, регистронезависимый">utf16_roman_ci</option>
+<option value="utf16_romanian_ci" title="Румынский, регистронезависимый">utf16_romanian_ci</option>
+<option value="utf16_sinhala_ci" title="неизвестно, регистронезависимый">utf16_sinhala_ci</option>
+<option value="utf16_slovak_ci" title="Словацкий, регистронезависимый">utf16_slovak_ci</option>
+<option value="utf16_slovenian_ci" title="Словенский, регистронезависимый">utf16_slovenian_ci</option>
+<option value="utf16_spanish2_ci" title="Испанский традиционный, регистронезависимый">utf16_spanish2_ci</option>
+<option value="utf16_spanish_ci" title="Испанский, регистронезависимый">utf16_spanish_ci</option>
+<option value="utf16_swedish_ci" title="Шведский, регистронезависимый">utf16_swedish_ci</option>
+<option value="utf16_turkish_ci" title="Турецкий, регистронезависимый">utf16_turkish_ci</option>
+<option value="utf16_unicode_520_ci" title="Юникод (многоязычный)">utf16_unicode_520_ci</option>
+<option value="utf16_unicode_ci" title="Юникод (многоязычный), регистронезависимый">utf16_unicode_ci</option>
+<option value="utf16_vietnamese_ci" title="неизвестно, регистронезависимый">utf16_vietnamese_ci</option>
+</optgroup>
+<optgroup label="utf16le" title="UTF-16LE Unicode">
+<option value="utf16le_bin" title="неизвестно, Двоичный">utf16le_bin</option>
+<option value="utf16le_general_ci" title="неизвестно, регистронезависимый">utf16le_general_ci</option>
+</optgroup>
+<optgroup label="utf32" title="UTF-32 Unicode">
+<option value="utf32_bin" title="неизвестно, Двоичный">utf32_bin</option>
+<option value="utf32_croatian_ci" title="Хорватский, регистронезависимый">utf32_croatian_ci</option>
+<option value="utf32_croatian_mysql561_ci" title="Хорватский">utf32_croatian_mysql561_ci</option>
+<option value="utf32_czech_ci" title="Чешский, регистронезависимый">utf32_czech_ci</option>
+<option value="utf32_danish_ci" title="Датский, регистронезависимый">utf32_danish_ci</option>
+<option value="utf32_esperanto_ci" title="Эсперанто, регистронезависимый">utf32_esperanto_ci</option>
+<option value="utf32_estonian_ci" title="Эстонский, регистронезависимый">utf32_estonian_ci</option>
+<option value="utf32_general_ci" title="неизвестно, регистронезависимый">utf32_general_ci</option>
+<option value="utf32_german2_ci" title="Немецкий (телефонная книга), регистронезависимый">utf32_german2_ci</option>
+<option value="utf32_hungarian_ci" title="Венгерский, регистронезависимый">utf32_hungarian_ci</option>
+<option value="utf32_icelandic_ci" title="Исландский, регистронезависимый">utf32_icelandic_ci</option>
+<option value="utf32_latvian_ci" title="Латвийский, регистронезависимый">utf32_latvian_ci</option>
+<option value="utf32_lithuanian_ci" title="Литовский, регистронезависимый">utf32_lithuanian_ci</option>
+<option value="utf32_myanmar_ci" title="неизвестно, регистронезависимый">utf32_myanmar_ci</option>
+<option value="utf32_persian_ci" title="Персидский, регистронезависимый">utf32_persian_ci</option>
+<option value="utf32_polish_ci" title="Польский, регистронезависимый">utf32_polish_ci</option>
+<option value="utf32_roman_ci" title="Западно-Европейский, регистронезависимый">utf32_roman_ci</option>
+<option value="utf32_romanian_ci" title="Румынский, регистронезависимый">utf32_romanian_ci</option>
+<option value="utf32_sinhala_ci" title="неизвестно, регистронезависимый">utf32_sinhala_ci</option>
+<option value="utf32_slovak_ci" title="Словацкий, регистронезависимый">utf32_slovak_ci</option>
+<option value="utf32_slovenian_ci" title="Словенский, регистронезависимый">utf32_slovenian_ci</option>
+<option value="utf32_spanish2_ci" title="Испанский традиционный, регистронезависимый">utf32_spanish2_ci</option>
+<option value="utf32_spanish_ci" title="Испанский, регистронезависимый">utf32_spanish_ci</option>
+<option value="utf32_swedish_ci" title="Шведский, регистронезависимый">utf32_swedish_ci</option>
+<option value="utf32_turkish_ci" title="Турецкий, регистронезависимый">utf32_turkish_ci</option>
+<option value="utf32_unicode_520_ci" title="Юникод (многоязычный)">utf32_unicode_520_ci</option>
+<option value="utf32_unicode_ci" title="Юникод (многоязычный), регистронезависимый">utf32_unicode_ci</option>
+<option value="utf32_vietnamese_ci" title="неизвестно, регистронезависимый">utf32_vietnamese_ci</option>
+</optgroup>
+<optgroup label="utf8" title="UTF-8 Unicode">
+<option value="utf8_bin" title="Юникод (многоязычный), Двоичный">utf8_bin</option>
+<option value="utf8_croatian_ci" title="Хорватский, регистронезависимый">utf8_croatian_ci</option>
+<option value="utf8_croatian_mysql561_ci" title="Хорватский">utf8_croatian_mysql561_ci</option>
+<option value="utf8_czech_ci" title="Чешский, регистронезависимый">utf8_czech_ci</option>
+<option value="utf8_danish_ci" title="Датский, регистронезависимый">utf8_danish_ci</option>
+<option value="utf8_esperanto_ci" title="Эсперанто, регистронезависимый">utf8_esperanto_ci</option>
+<option value="utf8_estonian_ci" title="Эстонский, регистронезависимый">utf8_estonian_ci</option>
+<option value="utf8_general_ci" title="Юникод (многоязычный), регистронезависимый">utf8_general_ci</option>
+<option value="utf8_general_mysql500_ci" title="Юникод (многоязычный)">utf8_general_mysql500_ci</option>
+<option value="utf8_german2_ci" title="Немецкий (телефонная книга), регистронезависимый">utf8_german2_ci</option>
+<option value="utf8_hungarian_ci" title="Венгерский, регистронезависимый">utf8_hungarian_ci</option>
+<option value="utf8_icelandic_ci" title="Исландский, регистронезависимый">utf8_icelandic_ci</option>
+<option value="utf8_latvian_ci" title="Латвийский, регистронезависимый">utf8_latvian_ci</option>
+<option value="utf8_lithuanian_ci" title="Литовский, регистронезависимый">utf8_lithuanian_ci</option>
+<option value="utf8_myanmar_ci" title="неизвестно, регистронезависимый">utf8_myanmar_ci</option>
+<option value="utf8_persian_ci" title="Персидский, регистронезависимый">utf8_persian_ci</option>
+<option value="utf8_polish_ci" title="Польский, регистронезависимый">utf8_polish_ci</option>
+<option value="utf8_roman_ci" title="Западно-Европейский, регистронезависимый">utf8_roman_ci</option>
+<option value="utf8_romanian_ci" title="Румынский, регистронезависимый">utf8_romanian_ci</option>
+<option value="utf8_sinhala_ci" title="неизвестно, регистронезависимый">utf8_sinhala_ci</option>
+<option value="utf8_slovak_ci" title="Словацкий, регистронезависимый">utf8_slovak_ci</option>
+<option value="utf8_slovenian_ci" title="Словенский, регистронезависимый">utf8_slovenian_ci</option>
+<option value="utf8_spanish2_ci" title="Испанский традиционный, регистронезависимый">utf8_spanish2_ci</option>
+<option value="utf8_spanish_ci" title="Испанский, регистронезависимый">utf8_spanish_ci</option>
+<option value="utf8_swedish_ci" title="Шведский, регистронезависимый">utf8_swedish_ci</option>
+<option value="utf8_turkish_ci" title="Турецкий, регистронезависимый">utf8_turkish_ci</option>
+<option value="utf8_unicode_520_ci" title="Юникод (многоязычный)">utf8_unicode_520_ci</option>
+<option value="utf8_unicode_ci" title="Юникод (многоязычный), регистронезависимый">utf8_unicode_ci</option>
+<option value="utf8_vietnamese_ci" title="неизвестно, регистронезависимый">utf8_vietnamese_ci</option>
+</optgroup>
+<optgroup label="utf8mb4" title="UTF-8 Unicode">
+<option value="utf8mb4_bin" title="Юникод (многоязычный), Двоичный">utf8mb4_bin</option>
+<option value="utf8mb4_croatian_ci" title="Хорватский, регистронезависимый">utf8mb4_croatian_ci</option>
+<option value="utf8mb4_croatian_mysql561_ci" title="Хорватский">utf8mb4_croatian_mysql561_ci</option>
+<option value="utf8mb4_czech_ci" title="Чешский, регистронезависимый">utf8mb4_czech_ci</option>
+<option value="utf8mb4_danish_ci" title="Датский, регистронезависимый">utf8mb4_danish_ci</option>
+<option value="utf8mb4_esperanto_ci" title="Эсперанто, регистронезависимый">utf8mb4_esperanto_ci</option>
+<option value="utf8mb4_estonian_ci" title="Эстонский, регистронезависимый">utf8mb4_estonian_ci</option>
+<option value="utf8mb4_general_ci" title="Юникод (многоязычный), регистронезависимый">utf8mb4_general_ci</option>
+<option value="utf8mb4_german2_ci" title="Немецкий (телефонная книга), регистронезависимый">utf8mb4_german2_ci</option>
+<option value="utf8mb4_hungarian_ci" title="Венгерский, регистронезависимый">utf8mb4_hungarian_ci</option>
+<option value="utf8mb4_icelandic_ci" title="Исландский, регистронезависимый">utf8mb4_icelandic_ci</option>
+<option value="utf8mb4_latvian_ci" title="Латвийский, регистронезависимый">utf8mb4_latvian_ci</option>
+<option value="utf8mb4_lithuanian_ci" title="Литовский, регистронезависимый">utf8mb4_lithuanian_ci</option>
+<option value="utf8mb4_myanmar_ci" title="неизвестно, регистронезависимый">utf8mb4_myanmar_ci</option>
+<option value="utf8mb4_persian_ci" title="Персидский, регистронезависимый">utf8mb4_persian_ci</option>
+<option value="utf8mb4_polish_ci" title="Польский, регистронезависимый">utf8mb4_polish_ci</option>
+<option value="utf8mb4_roman_ci" title="Западно-Европейский, регистронезависимый">utf8mb4_roman_ci</option>
+<option value="utf8mb4_romanian_ci" title="Румынский, регистронезависимый">utf8mb4_romanian_ci</option>
+<option value="utf8mb4_sinhala_ci" title="неизвестно, регистронезависимый">utf8mb4_sinhala_ci</option>
+<option value="utf8mb4_slovak_ci" title="Словацкий, регистронезависимый">utf8mb4_slovak_ci</option>
+<option value="utf8mb4_slovenian_ci" title="Словенский, регистронезависимый">utf8mb4_slovenian_ci</option>
+<option value="utf8mb4_spanish2_ci" title="Испанский традиционный, регистронезависимый">utf8mb4_spanish2_ci</option>
+<option value="utf8mb4_spanish_ci" title="Испанский, регистронезависимый">utf8mb4_spanish_ci</option>
+<option value="utf8mb4_swedish_ci" title="Шведский, регистронезависимый">utf8mb4_swedish_ci</option>
+<option value="utf8mb4_turkish_ci" title="Турецкий, регистронезависимый">utf8mb4_turkish_ci</option>
+<option value="utf8mb4_unicode_520_ci" title="Юникод (многоязычный)">utf8mb4_unicode_520_ci</option>
+<option value="utf8mb4_unicode_ci" title="Юникод (многоязычный), регистронезависимый">utf8mb4_unicode_ci</option>
+<option value="utf8mb4_vietnamese_ci" title="неизвестно, регистронезависимый">utf8mb4_vietnamese_ci</option>
+</optgroup>`
+document.getElementsByName('tbl_collation')[0].innerHTML = cdrs;
+var d1 = `
+            <tr class="elem">
+                <th><input name="name" maxlength="64" size="15"></th>
+                <th><select name="type"><option title="Четырех-байтовое целое число, диапазон чисел со знаком от -2,147,483,648 до 2,147,483,647, диапазон чисел без знака от 0 до 4,294,967,295">INT</option><option title="Строка переменной длины (0-65,535), эффективная максимальная длина зависит от максимального размера строки">VARCHAR</option><option title="Столбец типа TEXT с максимальной длиной 65,535 (2^16 - 1) символов, сохраняется с двух-байтовым префиксом, указывающим длину значения в байтах">TEXT</option><option title="Дата, поддерживаемый диапазон от 1000-01-01 до 9999-12-31">DATE</option><optgroup label="Числовые"><option title="Одно-байтовое целое число, диапазон чисел со знаком от -128 до 127, диапазон чисел без знака от 0 до 255">TINYINT</option><option title="Двух-байтовое целое число, диапазон чисел со знаком от -32,768 до 32,767, диапазон чисел без знака от 0 до 65,535">SMALLINT</option><option title="Трех-байтовое целое число, диапазон чисел со знаком от -8,388,608 до 8,388,607, диапазон чисел без знака от 0 до 16,777,215">MEDIUMINT</option><option title="Четырех-байтовое целое число, диапазон чисел со знаком от -2,147,483,648 до 2,147,483,647, диапазон чисел без знака от 0 до 4,294,967,295">INT</option><option title="Восьми-байтовое целое число, диапазон чисел со знаком от -9,223,372,036,854,775,808 до 9,223,372,036,854,775,807, диапазон чисел без знака от 0 до 18,446,744,073,709,551,615">BIGINT</option><option disabled="disabled">-</option><option title="Число с плавающей точкой (M, D) - максимальное количество целых чисел (M) не должно превышать 65 (по умолчанию 10), максимальное количество десятичных (D) не должно превышать 30 (по умолчанию 0)">DECIMAL</option><option title="Малое число с плавающей точкой, допустимые значения от -3.402823466E+38 до -1.175494351E-38, 0, и от 1.175494351E-38 до 3.402823466E+38">FLOAT</option><option title="Число с плавающей точкой удвоенной точности, допустимые значения от -1.7976931348623157E+308 до -2.2250738585072014E-308, 0, и от 2.2250738585072014E-308 до 1.7976931348623157E+308">DOUBLE</option><option title="Синоним для DOUBLE (исключение: в режиме REAL_AS_FLOAT SQL будет синоним для FLOAT)">REAL</option><option disabled="disabled">-</option><option title="Тип поля-бит (M), сохранит M бит для значения (по умолчанию 1, максимум 64)">BIT</option><option title="Синоним для TINYINT(1), значение нуля предполагает false, ненулевые значения предполагают true">BOOLEAN</option><option title="Псевдоним для BIGINT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE">SERIAL</option></optgroup><optgroup label="Дата и время"><option title="Дата, поддерживаемый диапазон от 1000-01-01 до 9999-12-31">DATE</option><option title="Совмещение даты и времени, поддерживаемый диапазон от " 1000-01-01="" 00:00:00"="" до="" "9999-12-31="" 23:59:59""="">DATETIME</option><option title="Временная метка, диапазон от " 1970-01-01="" 00:00:01"="" utc="" до="" "2038-01-09="" 03:14:07"="" utc,="" содержит="" количество="" секунд="" прошедших="" со="" времени="" ("1970-01-01="" 00:00:00"="" utc)"="">TIMESTAMP</option><option title="Время, диапазон от -838:59:59 до 838:59:59">TIME</option><option title="Год в четырехзначном (4, по умолчанию) или двухзначном (2) формате, допустимые значения от 70 (1970) до 69 (2069) или от 1901 до 2155 и 0000">YEAR</option></optgroup><optgroup label="Символьные"><option title="Строка фиксированной длины (0-255, по-умолчанию 1), при хранении всегда дополняется пробелами в конце строки до заданной длины">CHAR</option><option title="Строка переменной длины (0-65,535), эффективная максимальная длина зависит от максимального размера строки">VARCHAR</option><option disabled="disabled">-</option><option title="Столбец типа TEXT с максимальной длиной 255 (2^8 - 1) символов, сохраняется с одно-байтовым префиксом, указывающим длину значения в байтах">TINYTEXT</option><option title="Столбец типа TEXT с максимальной длиной 65,535 (2^16 - 1) символов, сохраняется с двух-байтовым префиксом, указывающим длину значения в байтах">TEXT</option><option title="Столбец типа TEXT с максимальной длиной 16,777,215 (2^24 - 1) символов, сохраняется с трех-байтовым префиксом, указывающим длину значения в байтах">MEDIUMTEXT</option><option title="Столбец типа TEXT с максимальной длиной 4,294,967,295 или 4ГиБ (2^32 - 1) символов, сохраняется с четырех-байтовым префиксом, указывающим длину значения в байтах">LONGTEXT</option><option disabled="disabled">-</option><option title="Аналогичен типу CHAR, но предназначен для хранения бинарных байт-строк, вместо не бинарных символьных строк">BINARY</option><option title="Аналогичен типу VARCHAR, но предназначен для хранения бинарных байт-строк, вместо не бинарных символьных строк">VARBINARY</option><option disabled="disabled">-</option><option title="Столбец типа BLOB с максимальной длиной 255 (2^8 - 1) байт, сохраняется с одно-байтовым префиксом, указывающим длину значения">TINYBLOB</option><option title="Столбец типа BLOB с максимальной длиной 16,777,215 (2^24 - 1) байт, сохраняется с трех-байтовым префиксом, указывающим длину значения">MEDIUMBLOB</option><option title="Столбец типа BLOB с максимальной длиной 65,535 (2^16 - 1) байт, сохраняется с двух-байтовым префиксом, указывающим длину значения">BLOB</option><option title="Столбец типа BLOB с максимальной длиной 4,294,967,295 или 4ГиБ (2^32 - 1) байт, сохраняется с четырех-байтовым префиксом, указывающим длину значения">LONGBLOB</option><option disabled="disabled">-</option><option title="Перечисляемый тип данных, который может содержать максимум 65,535 различных величин или специальную величину ошибки ''">ENUM</option><option title="Единственное значение выбираемое из набора не более 64 членов">SET</option></optgroup><optgroup label="Пространственные"><option title="Тип для хранения любого вида геометрических данных">GEOMETRY</option><option title="Точка в двухмерном пространстве">POINT</option><option title="Кривая с линейной интерполяцией между точек">LINESTRING</option><option title="Многоугольник">POLYGON</option><option title="Набор точек">MULTIPOINT</option><option title="Набор кривых с линейной интерполяцией между точек">MULTILINESTRING</option><option title="Набор многоугольников">MULTIPOLYGON</option><option title="Набор геометрических объектов любого типа">GEOMETRYCOLLECTION</option></optgroup>    </select></th>
+                <th><input name="size" size="14"></th>
+                <th><select name="default"><option value="NONE">Нет</option><option value="USER_DEFINED">Как определено:</option><option value="NULL">NULL</option><option value="CURRENT_TIMESTAMP">CURRENT_TIMESTAMP</option></select></th>
+                <th><select lang="en" dir="ltr" name="collation">${cdrs}</select></th>
+                <th><select style="font-size: 50%;" name="attribute"><option value="" selected="selected"></option><option value="BINARY">BINARY</option><option value="UNSIGNED">UNSIGNED</option><option value="UNSIGNED ZEROFILL">UNSIGNED ZEROFILL</option><option value="on update CURRENT_TIMESTAMP">on update CURRENT_TIMESTAMP</option></select></th>
+                <th><input name="null" type="checkbox" value="NULL"></th>
+                <th><select name="key"><option value="none">---</option><option value="primary" title="Первичный">PRIMARY</option><option value="unique" title="Уникальный">UNIQUE</option><option value="index" title="Индекс">INDEX</option><option value="fulltext" title="Полнотекстовый">FULLTEXT</option></select></th>
+                <th><input name="extra" type="checkbox" value="AUTO_INCREMENT"></th>
+                <th><input type="text" name="comments" size="12" value=""></th>
+                <th><select size="1" name="mimetype"><option value="">&nbsp;</option><option value="Application_Octetstream">Application/Octetstream</option><option value="Image_JPEG">Image/JPEG</option><option value="Image_PNG">Image/PNG</option><option value="Text_Plain">Text/Plain</option></select></th>
+                <th><select size="1" name="transformation"><option value="" title="Ниодного"></option><option value="Application_Octetstream_Download.class.php" title="Отображает ссылку для загрузки бинарных данных поля. Возможно использование первого параметра для выбора имени файла, или использование второго параметра, как имени поля, которое содержит имя файла. В случае использования второго параметра, первый необходимо установить в виде пустой строки.">Application/Octetstream: Download</option><option value="Application_Octetstream_Hex.class.php" title="Отображает данные в шестнадцатеричном представлении. Необязательный первый параметр может быть использован для указания на то, через какие промежутки будет добавляться пробел (по умолчанию после двух полубайтов).">Application/Octetstream: Hex</option><option value="Image_JPEG_Inline.class.php" title="Отображает уменьшенную иконку изображения, на которую можно нажать для увеличения. Параметрами задается максимальная ширина и высота картинки в пикселях. Изначальное соотношение сторон, сохраняется.">Image/JPEG: Inline</option><option value="Image_JPEG_Link.class.php" title="Отображает ссылку для загрузки изображения.">Image/JPEG: Link</option><option value="Image_PNG_Inline.class.php" title="Отображает уменьшенную иконку изображения, на которую можно нажать для увеличения. Параметрами задается максимальная ширина и высота картинки в пикселях. Изначальное соотношение сторон, сохраняется.">Image/PNG: Inline</option><option value="Text_Plain_Bool2text.class.php" title="Преобразует значения Boolean в текст (по-умолчанию, 'T' и 'F'). Первое значение для TRUE, второе - для FALSE. Непустое значение = TRUE.">Text/Plain: Bool2text</option><option value="Text_Plain_Dateformat.class.php" title="Отображает поля типа TIME, TIMESTAMP, DATETIME или время в формате Unix, в виде форматированного вывода. Первый параметр прибавляет смещение, в часах (по умолчанию: 0). Второй параметр задает иное форматирование строки даты/времени. Третий параметр определяет установку локального (строка &quot;local&quot;) или всемирного (строка &quot;utc&quot;) времени. В соответствии с установленным третьим параметром формат даты должен иметь различные значения - для &quot;local&quot; смотрите описание функции PHP strftime(), для &quot;utc&quot; - gmdate().">Text/Plain: Dateformat</option><option value="Text_Plain_External.class.php" title="ТОЛЬКО LINUX: Запускает внешнее приложение и подает ему на ввод данные поля. Возвращает обычный вывод приложения. По умолчанию используется Tidy (форматирование HTML-кода). По соображениям безопасности, необходимо вручную отредактировать файл libraries/plugins/transformations/Text_Plain_External.class.php вписав доступные программы. Первый параметр задает номер используемой программы, во втором параметре передаются параметры собственно программы. При установке третьего параметра в 1, данные вывода будут преобразованы функцией PHP htmlspecialchars() (по умолчанию: 1). Установка четвертого параметра в 1, предотвратит переносы строки и выведет данные в одну строку (по умолчанию: 1).">Text/Plain: External</option><option value="Text_Plain_Formatted.class.php" title="Отображает содержимое поля как есть, без преобразования данных функцией PHP htmlspecialchars(). Таким образом поле может содержать рабочий HTML-код.">Text/Plain: Formatted</option><option value="Text_Plain_Imagelink.class.php" title="Показывает изображение и ссылку; поле содержит имя файла. Первый параметр является URL-префиксом, например &quot;http://domain.com/&quot;. Второй и третий параметр - ширина и высота изображения в пикселях.">Text/Plain: Imagelink</option><option value="Text_Plain_Link.class.php" title="Отображает ссылку; поле содержит имя файла. Первый параметр - URL-префикс, например &quot;http://www.example.com/&quot;. Второй параметр - заголовок ссылки.">Text/Plain: Link</option><option value="Text_Plain_Longtoipv4.class.php" title="Конвертирует сетевой адрес (IPv4) в стандартную строку с разделителем в виде точки.">Text/Plain: Longtoipv4</option><option value="Text_Plain_Preappend.class.php" title="Добавляет текст к строке спереди и/или сзади. При использовании первой опции текст будет добавлен спереди, при использовании второй - добавлен сзади (текст должен быть заключен в одинарные кавычки, по умолчанию добавляется пустая строка).">Text/Plain: Preappend</option><option value="Text_Plain_Sql.class.php" title="Форматирует текст в виде SQL запроса с подсветкой синтаксиса.">Text/Plain: Sql</option><option value="Text_Plain_Substring.class.php" title="Показывает только часть строки. Первый параметр - сдвиг, определяющий начало выводимого текста (по умолчанию: 0). Второй параметр - количество возвращаемых символов (по умолчанию: до конца строки). Третий параметр определяет строку добавляемую вначале и/или в конце существующего отрывка (по умолчанию: &quot;…&quot;).">Text/Plain: Substring</option></select></th>
+                <th><input type="text" name="transformation_options" size="16" value=""></th>
+            </tr>
+`;
+var table = document.getElementById('t1');
+
+function add() {
+    for (var i = document.getElementById('elems').value; i > 0; i--) {
+        table.innerHTML = table.innerHTML + d1;
+    }
+}
+function create() {
+    if (!document.getElementsByName('table')[0].value) {
+        return alert('Введите имя таблицы');
+    }
+    var _data1 = `CREATE TABLE \`${document.getElementsByName('table')[0].value}\` ( `;
+    var count = document.getElementsByTagName('tr').length - 1;
+    var elems = [];
+    var indx = {}, _indx = [];
+
+    for (var i = 0; i < count; i++) {
+        if (!document.getElementsByName('name')[i]) {
+            continue;
+        }
+        if (!document.getElementsByName('name')[i].value) {
+            continue;
+        }
+
+        if (document.getElementsByName('key')[i].value && document.getElementsByName('key')[i].value != 'none') {
+            if (!_indx[document.getElementsByName('key')[i].value]) {
+                _indx[document.getElementsByName('key')[i].value] = []
+            }
+            _indx[document.getElementsByName('key')[i].value].push(document.getElementsByName('name')[i].value)
+        }
+        var _elem = `\`${document.getElementsByName('name')[i].value}\` `
+        _elem += `${document.getElementsByName('type')[i].value}${document.getElementsByName('size')[i].value ? '(' + document.getElementsByName('size')[i].value + ')' : ''} `;
+        _elem += `${document.getElementsByName('null')[i].checked ? 'NULL' : 'NOT NULL'} `;
+        _elem += `DEFAULT ${document.getElementsByName('default')[i].value == 'USER_DEFINED' ? document.getElementsByName('_default')[i].value : document.getElementsByName('default')[i].value} `;
+        _elem += document.getElementsByName('extra')[i].checked ? document.getElementsByName('extra')[i].value + ' ' : '';
+        _elem += document.getElementsByName('comments')[i].value ? `COMMENT '${document.getElementsByName('comments')[i].value}' ` : '';
+        elems.push(_elem);
+    }
+
+    for (const key in _indx) {
+        _indx.push(`${key.toUpperCase()} (\`${_indx[key].join('`,`')}\`)`);
+    }
+
+    var end = `ENGINE = ${document.getElementsByName('tbl_storage_engine')[0].value ? document.getElementsByName('tbl_storage_engine')[0].value : 'InnoDB'}`;
+    chrst = document.getElementsByName('tbl_collation')[0].value;
+    if (chrst) {
+        end += ` CHARSET=${chrst.split('_')[0]} COLLATE ${chrst}`;
+    }
+    if (document.getElementsByName('comment')[0].value) {
+        end += ` COMMENT = '${document.getElementsByName('comment')[0].value}'`;
+    }
+    if (document.getElementsByName('partition_definition')[0].value) {
+        end += ` ${document.getElementsByName('partition_definition')[0].value}`;
+    }
+    
+
+    window.opener.document.getElementsByClassName('createdb-area')[+location.hash.substr(1)].innerHTML = `${_data1}${elems.join(',')}${_indx.length ? ',':''}${_indx.join(', ')}) ${end};`;
+    window.close();
+}
+add();
+console.log(window.opener)
+        </script>
+    </body>
+</html>
