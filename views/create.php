@@ -1,12 +1,30 @@
 <?php
 define('PLUGINS_DIR', __DIR__ . '/../../');
+global $name, $path, $version, $description;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    global $name, $path, $version, $description;
+    $info = [];
+
     $name = filter_input(INPUT_POST, 'name');
     $path = filter_input(INPUT_POST, 'path');
     $version = filter_input(INPUT_POST, 'version');
     $description = filter_input(INPUT_POST, 'description');
+    $delete = filter_input(INPUT_POST, 'delete');
+    $bases = $_POST['db'];
+
+    if ($delete) {
+        $info['bases'] = [];
+
+        foreach ($bases as $key => $base) {
+            $matched = [];
+            if (preg_match("/create\s*table\s*(?:`|)([\w-]+)/im", $base, $matched)) {
+                $info['bases'][] = $matched[1];
+            }
+        }
+    }
+
+    // var_dump($bases);
+    //exit;
 
     if (!$name) {
         render("Введите название плагина.");
@@ -21,7 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (strlen($path) > 64) {
         render("В имени пути не должно быть более 64 символов.");
     }
+    
     $dir = scandir(PLUGINS_DIR);
+
     foreach ($dir as $value) {
         if ($value == $path) {
             render("Путь \"$value\" занят.");
@@ -56,17 +76,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $plugin_dir = PLUGINS_DIR . $path . '';
     try {
+        $info['name'] = $name;
+        $info['version'] = $version;
+        
         echo mkdir($plugin_dir) ? 1 : 0;
         mkdir($plugin_dir . '/views');
         touch($plugin_dir . '/index.php');
         $file = fopen($plugin_dir . '/config.json', 'w');
-        $test = fwrite($file, json_encode([
-            'name' => $name,
-            'version' => $version
-        ]));
-        var_dump($_SERVER);
+        $test = fwrite($file, json_encode($info));
+        // var_dump($_SERVER);
         fclose($file);
         $file = fopen($plugin_dir . '/index.php', 'w');
+
+        $bases = join($bases, '", "');
         $test = fwrite($file, "<?php
 /*
 Plugin Name: $name
@@ -77,14 +99,28 @@ Author: " . wp_get_current_user()->display_name . "
 Author URI: {$_SERVER['HTTP_ORIGIN']}/{$_SERVER['DOCUMENT_URI']}
 */
 
+require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+
 register_activation_hook(__FILE__, 'msp_activation');
 register_deactivation_hook(__FILE__, 'msp_deactivation');
 
 function msp_activation() {
+    global \$wpdb;
 
+    \$bases = [\"$bases\"];
+
+    foreach (\$bases as \$base) {
+        dbDelta(\$base);
+    }
+
+    register_uninstall_hook(__FILE__, 'msp_uninstall');
 }
 
 function msp_deactivation() {
+
+}
+
+function msp_uninstall() {
 
 }
 ");
@@ -95,7 +131,7 @@ function msp_deactivation() {
     }
     
 } else {
-    render();
+    render('');
 }
 
 function render($error) {
@@ -134,8 +170,8 @@ function render($error) {
                         <div class="createdb-base">
                         
                         </div>
-                        <input type="hidden" name="db" value="">
-                        <p><input type="checkbox" id="ch_2"><label for="ch_2"> Удалять базы при деактивации плагина</label></p>
+                        <input type="hidden" name="_db" value="">
+                        <p><input type="checkbox" name="delete" id="ch_2"><label for="ch_2"> Удалять базы при деактивации плагина</label></p>
                     </div>
                 </td>
             </tr>
@@ -158,7 +194,7 @@ document.getElementsByClassName('createdb-c')[0].onclick = function () {
     }
 }
 document.getElementsByClassName('createdb-add')[0].onclick = function () {
-    document.getElementsByClassName('createdb-base')[0].innerHTML += `<div><textarea class="createdb-area" id="createdb-area-${++idx}"></textarea><button class="createdb-cc" id="createdb-cc-${idx}">Конструктор</button></div>`;
+    document.getElementsByClassName('createdb-base')[0].innerHTML += `<div><textarea name="db[]" class="createdb-area" id="createdb-area-${++idx}"></textarea><button class="createdb-cc" id="createdb-cc-${idx}">Конструктор</button></div>`;
     for (const o of document.getElementsByClassName(`createdb-cc`)) {
         o.onclick = function () {
             const id = this.id.split('-')[2]-1;
@@ -166,11 +202,11 @@ document.getElementsByClassName('createdb-add')[0].onclick = function () {
             return false;
         }
     }
-    console.log(idx);
     return false;
 }
 </script>
 <?php
+    
     exit;
 }
 ?>
